@@ -106,87 +106,68 @@ int main()
     
     sort(boxes.begin(),boxes.end(),sortById);
     
-    while(t.timeIs()<5000)
+    while(t.timeIs()<49000)
     {
-        float maxTruckWeight=0;
-        int maxTruckId;
-        
-        for(int i=0;i<100;i++)
+        for(int aTruckId=0;aTruckId<100;aTruckId++)
         {
-            if(trucks[i].weight>maxTruckWeight)
+            for(int bTruckId=0;bTruckId<100;bTruckId++)
             {
-                maxTruckWeight=trucks[i].weight;
-                maxTruckId=i;
-            }
-        }
-        
-        float minTruckWeight=maxTruckWeight;
-        int minTruckId;
-        
-        for(int i=0;i<100;i++)
-        {
-            if(trucks[i].weight<minTruckWeight)
-            {
-                minTruckWeight=trucks[i].weight;
-                minTruckId=i;
-            }
-        }
-        
-        vector<int> minTruckBoxes;
-        vector<int> maxTruckBoxes;
-        
-        for(int i=0;i<boxCount;i++)
-        {
-            if(boxes[i].truckId==minTruckId)
-            {
-                minTruckBoxes.push_back(i);
-            }
-            
-            if(boxes[i].truckId==maxTruckId)
-            {
-                maxTruckBoxes.push_back(i);
-            }
-        }
-        
-        float minDelta=abs(maxTruckWeight-minTruckWeight);
-        int minTruckBoxId=-1;
-        int maxTruckBoxId=-1;
-        
-        for(int i=0;i<minTruckBoxes.size();i++)
-        {
-            for(int j=0;j<maxTruckBoxes.size();j++)
-            {
-                float newMinTruckVolume=trucks[minTruckId].volume+boxes[maxTruckBoxes[j]].volume-boxes[minTruckBoxes[i]].volume;
-                float newMaxTruckVolume=trucks[maxTruckId].volume-boxes[maxTruckBoxes[j]].volume+boxes[minTruckBoxes[i]].volume;
-                
-                float newMinTruckWeight=trucks[minTruckId].weight+boxes[maxTruckBoxes[j]].weight-boxes[minTruckBoxes[i]].weight;
-                float newMaxTruckWeight=trucks[maxTruckId].weight-boxes[maxTruckBoxes[j]].weight+boxes[minTruckBoxes[i]].weight;
-                
-                float newDelta=abs(newMaxTruckWeight-newMinTruckWeight);
-                
-                if(newDelta<minDelta && newMinTruckVolume<=100 && newMaxTruckVolume<=100)
+                if(aTruckId!=bTruckId)
                 {
-                    minDelta=newDelta;
-                    minTruckBoxId=minTruckBoxes[i];
-                    maxTruckBoxId=maxTruckBoxes[j];
+                    vector<int> aTruckBoxes;
+                    vector<int> bTruckBoxes;
+                    
+                    for(int i=0;i<boxCount;i++)
+                    {
+                        if(boxes[i].truckId==aTruckId)
+                        {
+                            aTruckBoxes.push_back(i);
+                        }
+                        
+                        if(boxes[i].truckId==bTruckId)
+                        {
+                            bTruckBoxes.push_back(i);
+                        }
+                    }
+                    
+                    float minDelta=abs(trucks[aTruckId].weight-trucks[bTruckId].weight);
+                    int aTruckBoxId=-1;
+                    int bTruckBoxId=-1;
+                    
+                    for(int i=0;i<aTruckBoxes.size();i++)
+                    {
+                        for(int j=0;j<bTruckBoxes.size();j++)
+                        {
+                            float newATruckVolume=trucks[aTruckId].volume-boxes[aTruckBoxes[i]].volume+boxes[bTruckBoxes[j]].volume;
+                            float newBTruckVolume=trucks[bTruckId].volume+boxes[aTruckBoxes[i]].volume-boxes[bTruckBoxes[j]].volume;
+                            
+                            float newATruckWeight=trucks[aTruckId].weight-boxes[aTruckBoxes[i]].weight+boxes[bTruckBoxes[j]].weight;
+                            float newBTruckWeight=trucks[bTruckId].weight+boxes[aTruckBoxes[i]].weight-boxes[bTruckBoxes[j]].weight;
+                            
+                            float newDelta=abs(newATruckWeight-newBTruckWeight);
+                            
+                            if(newDelta<minDelta && newATruckVolume<=100 && newBTruckVolume<=100)
+                            {
+                                minDelta=newDelta;
+                                aTruckBoxId=aTruckBoxes[i];
+                                bTruckBoxId=bTruckBoxes[j];
+                            }
+                        }
+                    }
+                    
+                    if(aTruckBoxId!=-1)
+                    {
+                        boxes[aTruckBoxId].truckId=bTruckId;
+                        boxes[bTruckBoxId].truckId=aTruckId;
+                        
+                        trucks[aTruckId].volume=trucks[aTruckId].volume-boxes[aTruckBoxId].volume+boxes[bTruckBoxId].volume;
+                        trucks[bTruckId].volume=trucks[bTruckId].volume+boxes[aTruckBoxId].volume-boxes[bTruckBoxId].volume;
+            
+                        trucks[aTruckId].weight=trucks[aTruckId].weight-boxes[aTruckBoxId].weight+boxes[bTruckBoxId].weight;
+                        trucks[bTruckId].weight=trucks[bTruckId].weight+boxes[aTruckBoxId].weight-boxes[bTruckBoxId].weight;
+                    }
                 }
             }
-        }
-        
-        if(minTruckBoxId!=-1)
-        {
-            boxes[minTruckBoxId].truckId=maxTruckId;
-            boxes[maxTruckBoxId].truckId=minTruckId;
-            
-            trucks[minTruckId].volume=trucks[minTruckId].volume+boxes[maxTruckBoxId].volume-boxes[minTruckBoxId].volume;
-            trucks[maxTruckId].volume=trucks[maxTruckId].volume-boxes[maxTruckBoxId].volume+boxes[minTruckBoxId].volume;
-
-            trucks[minTruckId].weight=trucks[minTruckId].weight+boxes[maxTruckBoxId].weight-boxes[minTruckBoxId].weight;
-            trucks[maxTruckId].weight=trucks[maxTruckId].weight-boxes[maxTruckBoxId].weight+boxes[minTruckBoxId].weight;
-        }
-        else
-        {
-            break;
         }
     }
 
