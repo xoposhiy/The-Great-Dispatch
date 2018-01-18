@@ -1,18 +1,15 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
 struct box
 {
-   float weight;
-   float volume;
-   int truckId;
-   
-   box()
-   {
-       truckId=-1;
-   }
+    int id;
+    float weight;
+    float volume;
+    int truckId;
 };
 
 struct truck
@@ -27,24 +24,30 @@ struct truck
     }
 };
 
-int nextTruck(int truckId)
+bool sortByWeight(box a,box b)
 {
-    return (truckId+1)%100;
+    return a.weight>b.weight;
+}
+
+bool sortById(box a,box b)
+{
+    return a.id<b.id;
 }
 
 int main()
 {
     int boxCount;
-    int currentTruck=0;
     float targetWeight=0;
-    truck trucks[100];
     vector<box> boxes;
-
+    truck trucks[100];
+    
     cin>>boxCount;cin.ignore();
     
     for(int i=0;i<boxCount;i++)
     {
         box b;
+        
+        b.id=i;
         
         cin>>b.weight>>b.volume;cin.ignore();
         
@@ -52,41 +55,39 @@ int main()
         
         boxes.push_back(b);
     }
-
-    targetWeight/=100.0;
+    
+    targetWeight/=(float)boxCount;
+    
+    sort(boxes.begin(),boxes.end(),sortByWeight);
     
     for(int i=0;i<boxCount;i++)
     {
-        int bestTruck=0;
-        float bestWeightRatio=1000;
+        float minDelta=10000.0;
+        int minDeltaId;
         
-        for(int j=currentTruck;j<100;j++)
+        for(int j=0;j<100;j++)
         {
-            float weightRatio=abs((trucks[j].weight+boxes[i].weight)-targetWeight);
+            float delta=abs(targetWeight-(trucks[j].weight+boxes[i].weight));
             
-            if(trucks[j].volume+boxes[i].volume<=100 && weightRatio<bestWeightRatio)
+            if(delta<minDelta && trucks[j].volume+boxes[i].volume<=100)
             {
-                bestTruck=j;
-                bestWeightRatio=weightRatio;
-            }
-            
-            if(bestTruck==0 && j==99 && currentTruck!=0)
-            {
-                j=0;
+                minDelta=delta;
+                minDeltaId=j;
             }
         }
         
-        boxes[i].truckId=bestTruck;
-        trucks[bestTruck].volume+=boxes[i].volume;
-        trucks[bestTruck].weight+=boxes[i].weight;
+        boxes[i].truckId=minDeltaId;
         
-        currentTruck=nextTruck(currentTruck);
+        trucks[minDeltaId].volume+=boxes[i].volume;
+        trucks[minDeltaId].weight+=boxes[i].weight;
     }
+
+    sort(boxes.begin(),boxes.end(),sortById);
 
     for(int i=0;i<boxCount;i++)
     {
         cout<<boxes[i].truckId<<" ";
     }
-    
+
     cout<<endl;
 }
