@@ -106,8 +106,118 @@ int main()
     
     sort(boxes.begin(),boxes.end(),sortById);
     
-    while(t.timeIs()<49000)
+    bool keepWorking=true;
+    
+    while(keepWorking)
     {
+        keepWorking=false;
+        
+        for(int aTruckId=0;aTruckId<100;aTruckId++)
+        {
+            for(int bTruckId=0;bTruckId<100;bTruckId++)
+            {
+                if(aTruckId!=bTruckId)
+                {
+                    vector<int> aTruckBoxes;
+                    vector<int> bTruckBoxes;
+                    
+                    for(int i=0;i<boxCount;i++)
+                    {
+                        if(boxes[i].truckId==aTruckId)
+                        {
+                            aTruckBoxes.push_back(i);
+                        }
+                        
+                        if(boxes[i].truckId==bTruckId)
+                        {
+                            bTruckBoxes.push_back(i);
+                        }
+                    }
+                    
+                    if(trucks[aTruckId].weight<trucks[bTruckId].weight)
+                    {
+                        float minDelta=abs(trucks[aTruckId].weight-trucks[bTruckId].weight);
+                        int bTruckBoxId=-1;
+                        
+                        for(int i=0;i<bTruckBoxes.size();i++)
+                        {
+                            float newATruckVolume=trucks[aTruckId].volume+boxes[bTruckBoxes[i]].volume;
+                            
+                            float newATruckWeight=trucks[aTruckId].weight+boxes[bTruckBoxes[i]].weight;
+                            float newBTruckWeight=trucks[bTruckId].weight-boxes[bTruckBoxes[i]].weight;
+                            
+                            float newDelta=abs(newATruckWeight-newBTruckWeight);
+                            
+                            if(newDelta<minDelta && newATruckVolume<=100)
+                            {
+                                minDelta=newDelta;
+                                bTruckBoxId=i;
+                            }
+                        }
+                        
+                        if(bTruckBoxId!=-1)
+                        {
+                            boxes[bTruckBoxes[bTruckBoxId]].truckId=aTruckId;
+                            
+                            trucks[aTruckId].volume=trucks[aTruckId].volume+boxes[bTruckBoxes[bTruckBoxId]].volume;
+                            trucks[bTruckId].volume=trucks[bTruckId].volume-boxes[bTruckBoxes[bTruckBoxId]].volume;
+                
+                            trucks[aTruckId].weight=trucks[aTruckId].weight+boxes[bTruckBoxes[bTruckBoxId]].weight;
+                            trucks[bTruckId].weight=trucks[bTruckId].weight-boxes[bTruckBoxes[bTruckBoxId]].weight;
+                            
+                            bTruckBoxes.erase(bTruckBoxes.begin()+bTruckBoxId);
+                            
+                            keepWorking=true;
+                        }
+                    }
+                    
+                    
+                    
+                    if(trucks[aTruckId].weight>trucks[bTruckId].weight)
+                    {
+                        float minDelta=abs(trucks[aTruckId].weight-trucks[bTruckId].weight);
+                        int aTruckBoxId=-1;
+                        
+                        for(int i=0;i<aTruckBoxes.size();i++)
+                        {
+                            float newBTruckVolume=trucks[bTruckId].volume+boxes[aTruckBoxes[i]].volume;
+                            
+                            float newATruckWeight=trucks[aTruckId].weight-boxes[aTruckBoxes[i]].weight;
+                            float newBTruckWeight=trucks[bTruckId].weight+boxes[aTruckBoxes[i]].weight;
+                            
+                            float newDelta=abs(newATruckWeight-newBTruckWeight);
+                            
+                            if(newDelta<minDelta && newBTruckVolume<=100)
+                            {
+                                minDelta=newDelta;
+                                aTruckBoxId=i;
+                            }
+                        }
+                        
+                        if(aTruckBoxId!=-1)
+                        {
+                            boxes[aTruckBoxes[aTruckBoxId]].truckId=bTruckId;
+                            
+                            trucks[aTruckId].volume=trucks[aTruckId].volume-boxes[aTruckBoxes[aTruckBoxId]].volume;
+                            trucks[bTruckId].volume=trucks[bTruckId].volume+boxes[aTruckBoxes[aTruckBoxId]].volume;
+                
+                            trucks[aTruckId].weight=trucks[aTruckId].weight-boxes[aTruckBoxes[aTruckBoxId]].weight;
+                            trucks[bTruckId].weight=trucks[bTruckId].weight+boxes[aTruckBoxes[aTruckBoxId]].weight;
+                            
+                            keepWorking=true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    keepWorking=true;
+    
+    while(keepWorking)
+    {
+        keepWorking=false;
+        
         for(int aTruckId=0;aTruckId<100;aTruckId++)
         {
             for(int bTruckId=0;bTruckId<100;bTruckId++)
@@ -165,6 +275,8 @@ int main()
             
                         trucks[aTruckId].weight=trucks[aTruckId].weight-boxes[aTruckBoxId].weight+boxes[bTruckBoxId].weight;
                         trucks[bTruckId].weight=trucks[bTruckId].weight+boxes[aTruckBoxId].weight-boxes[bTruckBoxId].weight;
+                        
+                        keepWorking=true;
                     }
                 }
             }
